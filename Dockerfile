@@ -1,23 +1,26 @@
+# Usa una imagen base de Node.js
 ARG BASE=node:20.18.0
 FROM ${BASE} AS base
 
+# Establece el directorio de trabajo dentro del contenedor
 WORKDIR /app
 
-# Install dependencies (this step is cached as long as the dependencies don't change)
+# Copia el package.json y pnpm-lock.yaml para instalar dependencias
 COPY package.json pnpm-lock.yaml ./
 
+# Habilita pnpm e instala las dependencias
 RUN corepack enable pnpm && pnpm install
 
-# Copy the rest of your app's source code
+# Copia el resto del código de la aplicación
 COPY . .
 
-# Expose the port the app runs on
+# Expone el puerto 5173 (puerto predeterminado para Vite/Remix)
 EXPOSE 5173
 
-# Production image
+# Imagen de producción
 FROM base AS bolt-ai-production
 
-# Define environment variables with default values or let them be overridden
+# Define variables de entorno con valores predeterminados o sobreescribibles
 ARG GROQ_API_KEY
 ARG HuggingFace_API_KEY
 ARG OPENAI_API_KEY
@@ -32,9 +35,10 @@ ARG AWS_BEDROCK_CONFIG
 ARG VITE_LOG_LEVEL=debug
 ARG DEFAULT_NUM_CTX
 
+# Configura las variables de entorno
 ENV WRANGLER_SEND_METRICS=false \
     GROQ_API_KEY=${GROQ_API_KEY} \
-    HuggingFace_KEY=${HuggingFace_API_KEY} \
+    HuggingFace_API_KEY=${HuggingFace_API_KEY} \
     OPENAI_API_KEY=${OPENAI_API_KEY} \
     ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY} \
     OPEN_ROUTER_API_KEY=${OPEN_ROUTER_API_KEY} \
@@ -45,23 +49,25 @@ ENV WRANGLER_SEND_METRICS=false \
     TOGETHER_API_BASE_URL=${TOGETHER_API_BASE_URL} \
     AWS_BEDROCK_CONFIG=${AWS_BEDROCK_CONFIG} \
     VITE_LOG_LEVEL=${VITE_LOG_LEVEL} \
-    DEFAULT_NUM_CTX=${DEFAULT_NUM_CTX}\
+    DEFAULT_NUM_CTX=${DEFAULT_NUM_CTX} \
     RUNNING_IN_DOCKER=true
 
-# Pre-configure wrangler to disable metrics
+# Desactiva el envío de métricas de Wrangler
 RUN mkdir -p /root/.config/.wrangler && \
     echo '{"enabled":false}' > /root/.config/.wrangler/metrics.json
 
+# Compila la aplicación para producción
 RUN pnpm run build
 
+# Comando para ejecutar la aplicación en producción
 CMD [ "pnpm", "run", "dockerstart"]
 
-# Development image
+# Imagen de desarrollo
 FROM base AS bolt-ai-development
 
-# Define the same environment variables for development
+# Define las mismas variables de entorno para desarrollo
 ARG GROQ_API_KEY
-ARG HuggingFace 
+ARG HuggingFace_API_KEY
 ARG OPENAI_API_KEY
 ARG ANTHROPIC_API_KEY
 ARG OPEN_ROUTER_API_KEY
@@ -73,6 +79,7 @@ ARG TOGETHER_API_BASE_URL
 ARG VITE_LOG_LEVEL=debug
 ARG DEFAULT_NUM_CTX
 
+# Configura las variables de entorno para desarrollo
 ENV GROQ_API_KEY=${GROQ_API_KEY} \
     HuggingFace_API_KEY=${HuggingFace_API_KEY} \
     OPENAI_API_KEY=${OPENAI_API_KEY} \
@@ -85,8 +92,11 @@ ENV GROQ_API_KEY=${GROQ_API_KEY} \
     TOGETHER_API_BASE_URL=${TOGETHER_API_BASE_URL} \
     AWS_BEDROCK_CONFIG=${AWS_BEDROCK_CONFIG} \
     VITE_LOG_LEVEL=${VITE_LOG_LEVEL} \
-    DEFAULT_NUM_CTX=${DEFAULT_NUM_CTX}\
+    DEFAULT_NUM_CTX=${DEFAULT_NUM_CTX} \
     RUNNING_IN_DOCKER=true
 
-RUN mkdir -p ${WORKDIR}/run
-CMD pnpm run dev --host
+# Crea un directorio para archivos temporales
+RUN mkdir -p /app/run
+
+# Comando para ejecutar la aplicación en desarrollo
+CMD ["pnpm", "run", "dev", "--host", "0.0.0.0"]

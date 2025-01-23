@@ -1,26 +1,28 @@
-const { execSync } =require('child_process');
+const { execSync } = require('child_process');
 
-// Get git hash with fallback
+// Obtener el hash de Git con un valor predeterminado en caso de error
 const getGitHash = () => {
-  try {
-    return execSync('git rev-parse --short HEAD').toString().trim();
-  } catch {
-    return 'no-git-info';
-  }
+    try {
+        return execSync('git rev-parse --short HEAD').toString().trim();
+    } catch {
+        return 'no-git-info';
+    }
 };
 
-let commitJson = {
-  hash: JSON.stringify(getGitHash()),
-  version: JSON.stringify(process.env.npm_package_version),
+// Crear un objeto con la información del commit y la versión
+const commitJson = {
+    hash: getGitHash(),
+    version: process.env.npm_package_version
 };
 
+// Mostrar un mensaje de bienvenida con la información del commit y la versión
 console.log(`
 ★═══════════════════════════════════════★
           B O L T . D I Y
          ⚡️  Welcome  ⚡️
 ★═══════════════════════════════════════★
+📍 Current Version Tag: v${commitJson.version}
+📍 Current Commit Version: ${commitJson.hash}
+  Please wait until the URL appears here
+★═══════════════════════════════════════★
 `);
-console.log('📍 Current Version Tag:', `v${commitJson.version}`);
-console.log('📍 Current Commit Version:', commitJson.hash);
-console.log('  Please wait until the URL appears here');
-console.log('★═══════════════════════════════════════★');

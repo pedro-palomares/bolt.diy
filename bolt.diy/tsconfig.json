@@ -1,12 +1,16 @@
 {
     "compilerOptions": {
-        "target": "ES6",
-        "module": "commonjs",
-        "strict": true,
-        "esModuleInterop": true,
-        "skipLibCheck": true,
-        "forceConsistentCasingInFileNames": true
+      "target": "ES2020",  // Cambiado a una versión válida de ECMAScript
+      "module": "ESNext",  // Cambiado a "ESNext" para proyectos con "type": "module"
+      "strict": true,
+      "esModuleInterop": true,
+      "skipLibCheck": true,
+      "forceConsistentCasingInFileNames": true,
+      "outDir": "./dist",  // Especifica la carpeta de salida para los archivos compilados
+      "rootDir": "./src",  // Especifica la carpeta raíz del código fuente
+      "moduleResolution": "node",  // Necesario para proyectos con módulos ES
+      "resolveJsonModule": true  // Permite importar archivos JSON
     },
-    "include": ["src/**/*"],
-    "exclude": ["node_modules", "**/*.spec.ts"]
-}
+    "include": ["src/**/*"],  // Incluye todos los archivos en la carpeta "src"
+    "exclude": ["node_modules", "**/*.spec.ts"]  // Excluye node_modules y archivos de prueba
+  }
